@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <threads.h>
 
-struct Inthreadval
+struct inthreadval_s
 {
     thrd_t thread;
     uint8_t is_running;
@@ -11,34 +11,46 @@ struct Inthreadval
     void (*callback)(void);
 };
 
-struct Inthreadval *inthreadval_create(void (*callback)(void), uint32_t ms_interval)
+int _inthreadval_run(void *inthreadval_pointer);
+
+void inthreadval_create(inthreadval_s *inthreadval, void (*callback)(void), uint32_t ms_interval)
 {
-    struct Inthreadval *inthreadval = (struct Inthreadval *) malloc(sizeof(struct Inthreadval));
-
-    if (!inthreadval)
-    {
-        fprintf(stderr, "inthreadval::error: Failed to allocate memory for inthreadval object\n");
-        return NULL;
-    }
-
     inthreadval->is_running = 0;
     inthreadval->callback = callback;
     inthreadval->ms_interval = ms_interval;
-
-    return inthreadval;
 }
 
-void inthreadval_destroy(Inthreadval *inthreadval)
+void inthreadval_destroy(inthreadval_s *const inthreadval)
 {
     if (inthreadval->is_running)
         inthreadval_stop(inthreadval);
-
-    free(inthreadval);
 }
 
-int inthreadval_run(void *inthreadval_pointer)
+inthreadval_status_e inthreadval_start(inthreadval_s *const inthreadval)
 {
-    struct Inthreadval *inthreadval = (struct Inthreadval *) inthreadval_pointer;
+    if (inthreadval->is_running)
+        return INTHREADVAL_STATUS_ERROR_ALREADY_STARTED;
+
+    inthreadval->is_running = 1;
+    thrd_create(&inthreadval->thread, _inthreadval_run, inthreadval);
+
+    return INTHREADVAL_STATUS_OK;
+}
+
+inthreadval_status_e inthreadval_stop(inthreadval_s *const inthreadval)
+{
+    if (!inthreadval->is_running)
+        return INTHREADVAL_STATUS_ERROR_NOT_STARTED;
+
+    inthreadval->is_running = 0;
+    thrd_join(inthreadval->thread, NULL);
+
+    return INTHREADVAL_STATUS_OK;
+}
+
+int _inthreadval_run(void *inthreadval_pointer)
+{
+    inthreadval_s *inthreadval = (inthreadval_s *) inthreadval_pointer;
 
     struct timespec ts;
 
@@ -54,24 +66,3 @@ int inthreadval_run(void *inthreadval_pointer)
     return 0;
 }
 
-enum InthreadvalStatus inthreadval_start(Inthreadval *inthreadval)
-{
-    if (inthreadval->is_running)
-        return INTHREADVAL_STATUS_ERROR_ALREADY_STARTED;
-
-    inthreadval->is_running = 1;
-    thrd_create(&inthreadval->thread, inthreadval_run, inthreadval);
-
-    return INTHREADVAL_STATUS_OK;
-}
-
-enum InthreadvalStatus inthreadval_stop(Inthreadval *inthreadval)
-{
-    if (!inthreadval->is_running)
-        return INTHREADVAL_STATUS_ERROR_NOT_STARTED;
-
-    inthreadval->is_running = 0;
-    thrd_join(inthreadval->thread, NULL);
-
-    return INTHREADVAL_STATUS_OK;
-}
