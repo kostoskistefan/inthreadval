@@ -18,11 +18,12 @@ typedef struct inthreadval_s inthreadval_s;
 
 /**
  * @brief Creates a new Inthreadval instance
+ * @return The newly created instance
  **/
-extern void inthreadval_create(inthreadval_s *const inthreadval, void (*callback)(void), uint32_t ms_interval);
+extern inthreadval_s *inthreadval_create(void (*callback)(void), uint32_t ms_interval);
 
 /**
- * @brief Destroys a Inthreadval instance
+ * @brief Destroys a Inthreadval instance and frees memory
  **/
 extern void inthreadval_destroy(inthreadval_s *const inthreadval);
 

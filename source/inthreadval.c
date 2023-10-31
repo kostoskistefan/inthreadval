@@ -13,17 +13,29 @@ struct inthreadval_s
 
 int _inthreadval_run(void *inthreadval_pointer);
 
-void inthreadval_create(inthreadval_s *inthreadval, void (*callback)(void), uint32_t ms_interval)
+inthreadval_s *inthreadval_create(void (*callback)(void), uint32_t ms_interval)
 {
+    inthreadval_s *inthreadval = (inthreadval_s *) malloc(sizeof(inthreadval_s));
+
+    if (!inthreadval)
+    {
+        fprintf(stderr, "inthreadval::error: Failed to allocate memory for inthreadval object\n");
+        return NULL;
+    }
+
     inthreadval->is_running = 0;
     inthreadval->callback = callback;
     inthreadval->ms_interval = ms_interval;
+
+    return inthreadval;
 }
 
 void inthreadval_destroy(inthreadval_s *const inthreadval)
 {
     if (inthreadval->is_running)
         inthreadval_stop(inthreadval);
+
+    free(inthreadval);
 }
 
 inthreadval_status_e inthreadval_start(inthreadval_s *const inthreadval)
