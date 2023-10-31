@@ -1,26 +1,27 @@
 project(
-    'inthreadval',
-    'c',
-    version: '1.0.0',
-    license: 'MIT'
+  'inthreadval',
+  'c',
+  version: '1.0.0',
+  license: 'MIT'
 )
 
 buildtype = 'release'
 
 install_headers('include/inthreadval.h')
+inc = include_directories('include')
 
-inthreadval_sources = [
-    'source/inthreadval.c'
-]
-
-inthreadval_lib = shared_library(
-    'inthreadval',
-    inthreadval_sources,
-    dependencies: dependency('threads'),
-    install: true
+inthreadval_lib = library(
+  'inthreadval',
+  'source/inthreadval.c',
+  dependencies: dependency('threads'),
+  include_directories: inc,
+  install: true
 )
 
-inthreadval_dep = declare_dependency(link_with: inthreadval_lib)
+inthreadval_dep = declare_dependency(
+  include_directories: inc, 
+  link_with: inthreadval_lib
+)
 
 pkg = import('pkgconfig')
 pkg.generate(inthreadval_lib)
