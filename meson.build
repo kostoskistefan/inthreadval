@@ -2,7 +2,10 @@ project(
   'inthreadval',
   'c',
   version: '1.0.0',
-  license: 'MIT'
+  license: 'MIT',
+  default_options: [
+    'default_library=static'
+  ],
 )
 
 buildtype = 'release'
@@ -15,12 +18,12 @@ inthreadval_lib = library(
   'source/inthreadval.c',
   dependencies: dependency('threads'),
   include_directories: inc,
-  install: true
+  install: true,
 )
 
 inthreadval_dep = declare_dependency(
   include_directories: inc, 
-  link_with: inthreadval_lib
+  link_with: inthreadval_lib,
 )
 
 pkg = import('pkgconfig')
